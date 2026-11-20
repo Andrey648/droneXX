@@ -327,6 +327,40 @@ img{max-width:100%}
 @media (max-width:719px),(hover:none){.f-lang button{backdrop-filter:none;-webkit-backdrop-filter:none}}
 .at-footer .to-top{opacity:0!important;transform:translateY(12px)!important;pointer-events:none!important}
 @media (max-width:719px){.f-bar{flex-direction:column;align-items:flex-start}}
+.detail-page,.wrap{min-width:0}
+html{overflow-x:hidden}
+body{overflow-x:visible}
+.m-media,.m-info,.build,.build-list,.build-fig{min-width:0}
+.m-slide{box-sizing:border-box;min-width:100%;max-width:100%}
+.m-specs dd{min-width:0;overflow-wrap:anywhere}
+.m-specs dt{flex-shrink:0}
+.seq-row{transition:border-color .5s ease,box-shadow .5s ease}
+.seq-row.on{border-color:var(--accent)}
+@media (max-width:719px){
+  .m-bar{gap:10px}
+  .m-tab{padding:8px 14px;min-height:40px}
+  .m-slide{gap:14px;padding:14px}
+  .m-media .model-photo-wrap{aspect-ratio:16/10}
+  .m-info h3{font-size:22px}
+  .m-info .muted{font-size:13px}
+  .m-specs{margin-top:12px}
+  .m-specs div{padding:8px 0;font-size:13px}
+  .m-actions{flex-direction:row;margin-top:14px}
+}
+@media (hover:none){
+  .bg-float{display:none}
+  .reveal,.reveal.visible{transform:none}
+  .hero-scene .scene,.hero-copy,.build-fig img{will-change:auto}
+  .nav-row{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--panel)}
+  .scene-wrap{-webkit-mask-image:none;mask-image:none}
+  .hero-scene::before,.hero-scene::after{content:'';position:absolute;left:0;right:0;pointer-events:none;z-index:0}
+  .hero-scene::before{top:0;height:70px;background:linear-gradient(to top,transparent,var(--bg))}
+  .hero-scene::after{bottom:0;height:170px;background:linear-gradient(to bottom,transparent,var(--bg))}
+  .build-fig img{transition:opacity .9s ease,transform 1.2s cubic-bezier(.16,1,.3,1)}
+  .build-fig img.pre{opacity:0;transform:translate3d(36px,-24px,0) scale(.6)}
+}
+.m-track{padding:8px 4px 16px;margin:8px -4px -8px}
+.m-slide:hover{transform:none}
 </style>
 </head>
 <body>
@@ -811,7 +845,8 @@ img{max-width:100%}
   var hero=document.querySelector('.hero-scene'), scene=hero&&hero.querySelector('.scene'), copy=hero&&hero.querySelector('.hero-copy');
   var sec=document.getElementById('build'), box=sec&&sec.querySelector('.build'), fig=document.getElementById('flyer');
   var wrap=sec&&sec.firstElementChild, rows=box?[].slice.call(box.querySelectorAll('.seq-row')):[], TOP=84;
-  var buildOn=!reduce && sec && box && fig;
+  var touch=window.matchMedia && window.matchMedia('(hover:none)').matches;
+  var buildOn=!reduce && !touch && sec && box && fig;
   if(buildOn){ sec.classList.add('live'); box.classList.add('anim'); }
   var T={h:0,b:0}, C={h:0,b:0}, running=false;
   function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
@@ -825,7 +860,7 @@ img{max-width:100%}
     links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
   }
   function apply(){
-    if(!reduce && hero && scene){
+    if(!reduce && !touch && hero && scene){
       var k=(small&&small.matches)?.5:1;
       scene.style.transform='translate3d(0,'+(C.h*.2*k).toFixed(1)+'px,0)';
       copy.style.transform='translate3d(0,'+(-C.h*.1*k).toFixed(1)+'px,0)';
@@ -938,6 +973,21 @@ img{max-width:100%}
 (function(){
   var f=document.querySelector('.site-footer'); if(!f || !('IntersectionObserver' in window)) return;
   new IntersectionObserver(function(e){ document.body.classList.toggle('at-footer', e[0].isIntersecting); }).observe(f);
+})();
+</script>
+<script>
+(function(){
+  var touch=window.matchMedia && window.matchMedia('(hover:none)').matches;
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sec=document.getElementById('build'), fig=document.getElementById('flyer');
+  if(!touch || reduce || !sec || !fig || !('IntersectionObserver' in window)) return;
+  var rows=[].slice.call(sec.querySelectorAll('.seq-row'));
+  fig.classList.add('pre');
+  var io=new IntersectionObserver(function(e){
+    if(!e[0].isIntersecting) return; io.disconnect(); fig.classList.remove('pre');
+    rows.forEach(function(r,i){ setTimeout(function(){ r.classList.add('on'); }, 500+i*450); });
+  },{threshold:.25});
+  io.observe(sec);
 })();
 </script>
 </body>
